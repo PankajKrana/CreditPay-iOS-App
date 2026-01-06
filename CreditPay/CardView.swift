@@ -13,13 +13,21 @@ struct CardView: View {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color.black)
                 .frame(height: 280)
-                .overlay {
-                    Text("Hi there")
-                        .font(.title)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                }
-        }
+                .shadow(color: .black.opacity(0.25), radius: 12, y: 6)
+                .overlay(alignment: .topLeading) {
+                    VStack(alignment: .leading) {
+                        Text("neo")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+
+                        Spacer()
+
+                        Text("**** 1234")
+                            .font(.headline)
+                    }
+                    .foregroundColor(.white)
+                    .padding(24)
+                }        }
         .padding()
     }
 }
