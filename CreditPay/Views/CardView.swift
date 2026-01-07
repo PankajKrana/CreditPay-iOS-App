@@ -565,7 +565,7 @@ struct CardView: View {
                                 .font(.caption2)
                                 .opacity(0.7)
                             
-                            Text("Pankaj K. Rana")
+                            Text("Tony Stark")
                                 .font(.caption)
                                 .fontWeight(.medium)
                         }

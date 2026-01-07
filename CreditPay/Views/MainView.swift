@@ -17,7 +17,7 @@ struct MainView: View {
             Tab("Insights", systemImage: "graph.2d") {
                 InsightsView()
             }
-            Tab("Account", systemImage: "arrow.up.arrow.down") {
+            Tab("Payment", systemImage: "arrow.up.arrow.down") {
                 PaymentsView()
             }
 
