@@ -7,27 +7,6 @@
 
 import SwiftUI
 
-struct CreditCard: Identifiable {
-    let id = UUID()
-    let name: String
-    let lastFourDigits: String
-    let color: Color
-    let gradient: [Color]
-    let creditLimit: Double
-    let spentAmount: Double
-    let rewardPoints: Int
-    let transactionLimit: Double
-    let availableCredit: Double
-    
-    var spentPercentage: Double {
-        (spentAmount / creditLimit) * 100
-    }
-    
-    var remainingCredit: Double {
-        creditLimit - spentAmount
-    }
-}
-
 struct CardView: View {
     @State private var isExpanded = false
     @State private var selectedCard: CreditCard
