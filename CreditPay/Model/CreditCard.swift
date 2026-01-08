@@ -5,9 +5,11 @@
 //  Created by Pankaj Kumar Rana on 07/01/26.
 //
 
+import Foundation
+import SwiftUI
 
 struct CreditCard: Identifiable {
-    let id = UUID()
+    var id = UUID()
     let name: String
     let lastFourDigits: String
     let color: Color
