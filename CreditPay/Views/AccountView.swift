@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AccountView: View {
-    @State private var selectedCard: CreditCard?
+    @ObservedObject var cardManager = CardManager.shared
     @State private var showFreeze = false
     @State private var isCardFrozen = false
     @State private var showCardDetails = false
@@ -25,11 +25,9 @@ struct AccountView: View {
                                 .font(.largeTitle)
                                 .fontWeight(.bold)
                             
-                            if let card = selectedCard {
-                                Text(card.name.uppercased())
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
+                            Text(cardManager.selectedCard.name.uppercased())
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
                         }
                         
                         Spacer()
@@ -47,37 +45,19 @@ struct AccountView: View {
                     .padding(.top, 8)
                     
                     // MARK: Card Display
-                    if let card = selectedCard {
-                        CardDisplayView(card: card, isCardFrozen: isCardFrozen)
-                            .transition(.scale.combined(with: .opacity))
-                    } else {
-                        // Placeholder when no card is selected
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.gray.opacity(0.2))
-                            .frame(height: 220)
-                            .overlay {
-                                VStack(spacing: 12) {
-                                    Image(systemName: "creditcard")
-                                        .font(.system(size: 50))
-                                        .foregroundColor(.gray)
-                                    
-                                    Text("No Card Selected")
-                                        .font(.headline)
-                                        .foregroundColor(.secondary)
-                                    
-                                    Text("Go to Cards tab to select a card")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                            .padding(.horizontal)
-                    }
+                    CardDisplayView(card: cardManager.selectedCard, isCardFrozen: isCardFrozen)
+                        .transition(.scale.combined(with: .opacity))
+                        .id(cardManager.selectedCard.id) // Force refresh on card change
+                        .onAppear {
+                            print("🏠 AccountView: Displaying card \(cardManager.selectedCard.name)")
+                        }
+                        .onChange(of: cardManager.selectedCard.id) { oldValue, newValue in
+                            print("🔄 AccountView: Card changed from \(oldValue) to \(newValue)")
+                        }
                     
                     // MARK: Quick Stats
-                    if let card = selectedCard {
-                        quickStatsView(for: card)
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
-                    }
+                    quickStatsView(for: cardManager.selectedCard)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
                     
                     // MARK: Actions
                     HStack(spacing: 16) {
@@ -141,24 +121,17 @@ struct AccountView: View {
                     Spacer(minLength: 20)
                     
                     // MARK: Activation Banner
-                    if selectedCard != nil {
-                        activationBanner
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
-                    }
+                    activationBanner
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
                     
                     Spacer()
                 }
-                .animation(.spring(response: 0.6, dampingFraction: 0.8), value: selectedCard?.lastFourDigits)
+                .animation(.spring(response: 0.6, dampingFraction: 0.8), value: cardManager.selectedCard.id)
                 .animation(.spring(response: 0.5, dampingFraction: 0.8), value: isCardFrozen)
             }
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                loadSelectedCard()
-            }
             .sheet(isPresented: $showCardDetails) {
-                if let card = selectedCard {
-                    CardDetailsSheet(card: card)
-                }
+                CardDetailsSheet(card: cardManager.selectedCard)
             }
         }
     }
@@ -388,23 +361,6 @@ struct AccountView: View {
         }
     }
     
-    // MARK: - Load Selected Card
-    private func loadSelectedCard() {
-        // This would typically load from UserDefaults or AppStorage
-        // For now, we'll use the default card
-        selectedCard = CreditCard(
-            name: "neo",
-            lastFourDigits: "1234",
-            color: .black,
-            gradient: [.black, .gray.opacity(0.8)],
-            creditLimit: 100000,
-            spentAmount: 45000,
-            rewardPoints: 2850,
-            transactionLimit: 50000,
-            availableCredit: 55000
-        )
-    }
-    
     // MARK: - Helper Functions
     private func formatAmount(_ amount: Double) -> String {
         let formatter = NumberFormatter()
@@ -480,7 +436,7 @@ struct CardDisplayView: View {
                                 .font(.caption2)
                                 .opacity(0.7)
                             
-                            Text("Pankaj K. Rana")
+                            Text("Tony Stark")
                                 .font(.caption)
                                 .fontWeight(.medium)
                         }
@@ -588,4 +544,3 @@ struct CardDetailsSheet: View {
 #Preview {
     AccountView()
 }
-
