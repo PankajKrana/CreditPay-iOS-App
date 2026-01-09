@@ -10,13 +10,6 @@ import SwiftUI
 struct ContentView: View {
     @State private var selectedTab: TabIdentifier = .home
     
-    enum TabIdentifier: Hashable {
-        case home
-        case insights
-        case payments
-        case cards
-    }
-    
     var body: some View {
         TabView(selection: $selectedTab) {
             Tab("Home", systemImage: "house.fill", value: .home) {
@@ -39,6 +32,13 @@ struct ContentView: View {
         .tint(.blue)
     }
 }
+enum TabIdentifier: Hashable {
+    case home
+    case insights
+    case payments
+    case cards
+}
+
 
 #Preview {
     ContentView()
