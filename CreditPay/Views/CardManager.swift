@@ -1,7 +1,13 @@
+//
+//  CardManager.swift
+//  CreditPay
+//
+//  Created by Pankaj Kumar Rana on 08/01/26.
+//
+
 import SwiftUI
 import Combine
 
-// MARK: - Shared Card Manager
 class CardManager: ObservableObject {
     static let shared = CardManager()
     
@@ -9,9 +15,16 @@ class CardManager: ObservableObject {
     @Published var availableCards: [CreditCard]
     
     private init() {
-        // Initialize with default cards
-        self.availableCards = [
+        // Define card IDs for consistent references
+        let neoId = UUID()
+        let platinumId = UUID()
+        let goldId = UUID()
+        let silverId = UUID()
+
+        // Build cards locally first to avoid using self before initialization
+        let initialCards: [CreditCard] = [
             CreditCard(
+                id: neoId,
                 name: "neo",
                 lastFourDigits: "1234",
                 color: .black,
@@ -23,6 +36,7 @@ class CardManager: ObservableObject {
                 availableCredit: 55000
             ),
             CreditCard(
+                id: platinumId,
                 name: "platinum",
                 lastFourDigits: "5678",
                 color: .purple,
@@ -34,6 +48,7 @@ class CardManager: ObservableObject {
                 availableCredit: 115000
             ),
             CreditCard(
+                id: goldId,
                 name: "gold",
                 lastFourDigits: "9012",
                 color: .orange,
@@ -45,6 +60,7 @@ class CardManager: ObservableObject {
                 availableCredit: 88000
             ),
             CreditCard(
+                id: silverId,
                 name: "silver",
                 lastFourDigits: "3456",
                 color: .gray,
@@ -56,14 +72,22 @@ class CardManager: ObservableObject {
                 availableCredit: 32000
             )
         ]
-        
-        // Set the first card as default
-        self.selectedCard = availableCards[0]
+
+        // Assign stored properties in order
+        self.availableCards = initialCards
+        self.selectedCard = initialCards.first!
+
+        print("CardManager initialized with \(availableCards.count) cards")
+        print("Selected card: \(selectedCard.name)")
     }
     
     func selectCard(_ card: CreditCard) {
+        print("Selecting card: \(card.name)")
         withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
             selectedCard = card
         }
+        print("Card selected: \(selectedCard.name)")
     }
 }
+
+

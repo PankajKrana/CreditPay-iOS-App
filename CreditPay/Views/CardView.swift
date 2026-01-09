@@ -8,75 +8,13 @@
 import SwiftUI
 
 struct CardView: View {
+    @ObservedObject var cardManager = CardManager.shared
     @State private var isExpanded = false
-    @State private var selectedCard: CreditCard
     @State private var showCardDetails = false
     @State private var dragOffset: CGSize = .zero
     @State private var cardRotation: Double = 0
     @State private var cardScale: CGFloat = 1.0
     @Namespace private var animation
-    
-    let cards: [CreditCard] = [
-        CreditCard(
-            name: "neo",
-            lastFourDigits: "1234",
-            color: .black,
-            gradient: [.black, .gray.opacity(0.8)],
-            creditLimit: 100000,
-            spentAmount: 45000,
-            rewardPoints: 2850,
-            transactionLimit: 50000,
-            availableCredit: 55000
-        ),
-        CreditCard(
-            name: "platinum",
-            lastFourDigits: "5678",
-            color: .purple,
-            gradient: [.purple, .blue],
-            creditLimit: 200000,
-            spentAmount: 85000,
-            rewardPoints: 5420,
-            transactionLimit: 100000,
-            availableCredit: 115000
-        ),
-        CreditCard(
-            name: "gold",
-            lastFourDigits: "9012",
-            color: .orange,
-            gradient: [.orange, .yellow],
-            creditLimit: 150000,
-            spentAmount: 62000,
-            rewardPoints: 3890,
-            transactionLimit: 75000,
-            availableCredit: 88000
-        ),
-        CreditCard(
-            name: "silver",
-            lastFourDigits: "3456",
-            color: .gray,
-            gradient: [.gray, .white.opacity(0.8)],
-            creditLimit: 50000,
-            spentAmount: 18000,
-            rewardPoints: 1250,
-            transactionLimit: 25000,
-            availableCredit: 32000
-        )
-    ]
-    
-    init() {
-        let defaultCard = CreditCard(
-            name: "neo",
-            lastFourDigits: "1234",
-            color: .black,
-            gradient: [.black, .gray.opacity(0.8)],
-            creditLimit: 100000,
-            spentAmount: 45000,
-            rewardPoints: 2850,
-            transactionLimit: 50000,
-            availableCredit: 55000
-        )
-        _selectedCard = State(initialValue: defaultCard)
-    }
     
     var body: some View {
         NavigationStack {
@@ -116,8 +54,8 @@ struct CardView: View {
     // MARK: - Single Card View
     private var singleCardView: some View {
         VStack(spacing: 16) {
-            cardContent(for: selectedCard, index: 0, isInteractive: true)
-                .matchedGeometryEffect(id: selectedCard.id, in: animation)
+            cardContent(for: cardManager.selectedCard, index: 0, isInteractive: true)
+                .matchedGeometryEffect(id: cardManager.selectedCard.id, in: animation)
                 .scaleEffect(cardScale)
                 .rotation3DEffect(
                     .degrees(cardRotation),
@@ -162,11 +100,11 @@ struct CardView: View {
             
             // Swipe Indicator
             HStack(spacing: 8) {
-                ForEach(cards.indices, id: \.self) { index in
+                ForEach(cardManager.availableCards.indices, id: \.self) { index in
                     Circle()
-                        .fill(cards[index].id == selectedCard.id ? Color.blue : Color.gray.opacity(0.3))
-                        .frame(width: cards[index].id == selectedCard.id ? 8 : 6, height: cards[index].id == selectedCard.id ? 8 : 6)
-                        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: selectedCard.id)
+                        .fill(cardManager.availableCards[index].id == cardManager.selectedCard.id ? Color.blue : Color.gray.opacity(0.3))
+                        .frame(width: cardManager.availableCards[index].id == cardManager.selectedCard.id ? 8 : 6, height: cardManager.availableCards[index].id == cardManager.selectedCard.id ? 8 : 6)
+                        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: cardManager.selectedCard.id)
                 }
             }
             .padding(.vertical, 8)
@@ -230,8 +168,8 @@ struct CardView: View {
     // MARK: - Card Details View
     private var cardDetailsView: some View {
         VStack(spacing: 24) {
-            cardContent(for: selectedCard, index: 0, isInteractive: false)
-                .matchedGeometryEffect(id: selectedCard.id, in: animation)
+            cardContent(for: cardManager.selectedCard, index: 0, isInteractive: false)
+                .matchedGeometryEffect(id: cardManager.selectedCard.id, in: animation)
                 .transition(.scale.combined(with: .opacity))
             
             // Credit Limit Section
@@ -240,7 +178,7 @@ struct CardView: View {
                     Text("Credit Usage")
                         .font(.headline)
                     Spacer()
-                    Text("\(Int(selectedCard.spentPercentage))% Used")
+                    Text("\(Int(cardManager.selectedCard.spentPercentage))% Used")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
@@ -255,13 +193,13 @@ struct CardView: View {
                             RoundedRectangle(cornerRadius: 8)
                                 .fill(
                                     LinearGradient(
-                                        colors: selectedCard.spentPercentage > 80 ? [.red, .orange] : [.blue, .purple],
+                                        colors: cardManager.selectedCard.spentPercentage > 80 ? [.red, .orange] : [.blue, .purple],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
                                 )
-                                .frame(width: geometry.size.width * (selectedCard.spentAmount / selectedCard.creditLimit), height: 12)
-                                .animation(.spring(response: 0.8, dampingFraction: 0.8), value: selectedCard.spentAmount)
+                                .frame(width: geometry.size.width * (cardManager.selectedCard.spentAmount / cardManager.selectedCard.creditLimit), height: 12)
+                                .animation(.spring(response: 0.8, dampingFraction: 0.8), value: cardManager.selectedCard.spentAmount)
                         }
                     }
                     .frame(height: 12)
@@ -271,7 +209,7 @@ struct CardView: View {
                             Text("Spent")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                            Text("₹\(formatAmount(selectedCard.spentAmount))")
+                            Text("₹\(formatAmount(cardManager.selectedCard.spentAmount))")
                                 .font(.headline)
                                 .foregroundColor(.primary)
                         }
@@ -282,7 +220,7 @@ struct CardView: View {
                             Text("Available")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                            Text("₹\(formatAmount(selectedCard.remainingCredit))")
+                            Text("₹\(formatAmount(cardManager.selectedCard.remainingCredit))")
                                 .font(.headline)
                                 .foregroundColor(.green)
                         }
@@ -294,7 +232,7 @@ struct CardView: View {
                         Text("Total Limit")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        Text("₹\(formatAmount(selectedCard.creditLimit))")
+                        Text("₹\(formatAmount(cardManager.selectedCard.creditLimit))")
                             .font(.title3)
                             .fontWeight(.bold)
                     }
@@ -312,7 +250,7 @@ struct CardView: View {
                 infoCard(
                     icon: "gift",
                     title: "Reward Points",
-                    value: "\(selectedCard.rewardPoints)",
+                    value: "\(cardManager.selectedCard.rewardPoints)",
                     color: .orange
                 )
                 .transition(.asymmetric(
@@ -323,7 +261,7 @@ struct CardView: View {
                 infoCard(
                     icon: "arrow.up.arrow.down",
                     title: "Transaction Limit",
-                    value: "₹\(formatAmount(selectedCard.transactionLimit))",
+                    value: "₹\(formatAmount(cardManager.selectedCard.transactionLimit))",
                     color: .blue
                 )
                 .transition(.asymmetric(
@@ -403,21 +341,21 @@ struct CardView: View {
             
             ScrollView {
                 VStack(spacing: 20) {
-                    ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
+                    ForEach(Array(cardManager.availableCards.enumerated()), id: \.element.id) { index, card in
                         VStack(spacing: 12) {
                             cardContent(for: card, index: index, isInteractive: false)
                                 .matchedGeometryEffect(id: card.id, in: animation)
-                                .scaleEffect(selectedCard.id == card.id ? 1.0 : 0.95)
+                                .scaleEffect(cardManager.selectedCard.id == card.id ? 1.0 : 0.95)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 20)
                                         .strokeBorder(
-                                            selectedCard.id == card.id ?
+                                            cardManager.selectedCard.id == card.id ?
                                             LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing) :
                                             LinearGradient(colors: [.clear], startPoint: .topLeading, endPoint: .bottomTrailing),
                                             lineWidth: 3
                                         )
                                 )
-                                .shadow(color: selectedCard.id == card.id ? card.color.opacity(0.4) : .clear, radius: 12, y: 6)
+                                .shadow(color: cardManager.selectedCard.id == card.id ? card.color.opacity(0.4) : .clear, radius: 12, y: 6)
                                 .onTapGesture {
                                     selectCard(card)
                                 }
@@ -510,7 +448,7 @@ struct CardView: View {
                         
                         Spacer()
                         
-                        if selectedCard.id == card.id && isExpanded {
+                        if cardManager.selectedCard.id == card.id && isExpanded {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.title2)
                                 .foregroundColor(.green)
@@ -625,10 +563,10 @@ struct CardView: View {
         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
         impactFeedback.impactOccurred()
         
-        guard let currentIndex = cards.firstIndex(where: { $0.id == selectedCard.id }) else { return }
+        guard let currentIndex = cardManager.availableCards.firstIndex(where: { $0.id == cardManager.selectedCard.id }) else { return }
         
-        let nextIndex = (currentIndex + direction + cards.count) % cards.count
-        let nextCard = cards[nextIndex]
+        let nextIndex = (currentIndex + direction + cardManager.availableCards.count) % cardManager.availableCards.count
+        let nextCard = cardManager.availableCards[nextIndex]
         
         // Animate out
         withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
@@ -639,7 +577,7 @@ struct CardView: View {
         
         // Change card and animate in
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            selectedCard = nextCard
+            cardManager.selectCard(nextCard)
             dragOffset = CGSize(width: direction > 0 ? 500 : -500, height: 0)
             cardRotation = Double(-direction) * 15
             cardScale = 0.8
@@ -657,9 +595,7 @@ struct CardView: View {
         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
         impactFeedback.impactOccurred()
         
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-            selectedCard = card
-        }
+        cardManager.selectCard(card)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
