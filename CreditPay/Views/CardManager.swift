@@ -8,7 +8,9 @@
 import SwiftUI
 import Combine
 
-class CardManager: ObservableObject {
+@Observable
+@MainActor
+final class CardManager{
     static let shared = CardManager()
     
     @Published var selectedCard: CreditCard

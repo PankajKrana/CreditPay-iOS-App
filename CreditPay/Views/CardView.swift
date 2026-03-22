@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct CardView: View {
-    @ObservedObject var cardManager = CardManager.shared
+    @State private var cardManager = CardManager.shared
+
     @State private var isExpanded = false
     @State private var showCardDetails = false
     @State private var dragOffset: CGSize = .zero

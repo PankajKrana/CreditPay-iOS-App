@@ -99,7 +99,7 @@ struct PaymentsView: View {
                     .padding(.top, 8)
                 
                 // MARK: Category Filter
-                ScrollView(.horizontal, showsIndicators: false) {
+                ScrollView(.horizontal) {
                     HStack(spacing: 12) {
                         ForEach(PaymentCategory.allCases, id: \.self) { category in
                             categoryChip(category)
@@ -108,6 +108,7 @@ struct PaymentsView: View {
                     .padding(.horizontal)
                     .padding(.vertical, 12)
                 }
+                .scrollIndicators(.hidden)
                 .background(Color(uiColor: .systemBackground))
                 
                 // MARK: Payments List
@@ -119,12 +120,20 @@ struct PaymentsView: View {
                             ForEach(groupedPayments.keys.sorted(by: >), id: \.self) { date in
                                 Section {
                                     ForEach(groupedPayments[date] ?? []) { payment in
-                                        PaymentRowView(payment: payment)
-                                            .onTapGesture {
-                                                let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-                                                impactFeedback.impactOccurred()
-                                                selectedPayment = payment
-                                            }
+//                                        PaymentRowView(payment: payment)
+//                                            .onTapGesture {
+//                                                let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+//                                                impactFeedback.impactOccurred()
+//                                                selectedPayment = payment
+//                                            }
+                                        Button {
+                                            selectedPayment = payment
+                                        } label: {
+                                            PaymentRowView(payment: payment)
+                                        }
+                                        .buttonStyle(.plain)
+                                        .sensoryFeedback(.impact, trigger: selectedPayment?.id)
+
                                     }
                                 } header: {
                                     HStack {
@@ -191,7 +200,7 @@ struct PaymentsView: View {
                         .foregroundColor(.secondary)
                 }
                 
-                Text("₹\(formatAmount(abs(totalIncome)))")
+                Text(abs(totalIncome), format: .currency(code: "INR").precision(.fractionLength(0)))
                     .font(.title3)
                     .fontWeight(.bold)
                     .foregroundColor(.green)
@@ -218,7 +227,7 @@ struct PaymentsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
             .background(Color.red.opacity(0.1))
-            .cornerRadius(16)
+            .clipShape(.rect(cornerRadius: 16))
         }
     }
     
@@ -452,7 +461,7 @@ struct PaymentDetailSheet: View {
 // MARK: - Updated Payment Model
 extension Payment {
     static func mock(title: String, subtitle: String, amount: Int, date: String) -> Payment {
-        var payment = Payment(title: title, subtitle: subtitle, amount: amount, date: date)
+        let payment = Payment(title: title, subtitle: subtitle, amount: amount, date: date)
         // If Payment doesn't have a memberwise init with these labels, adjust as needed in the model file.
         return payment
     }
